@@ -1,1 +1,1 @@
-# Business-rules-for-T-SQL
+# Business rules for T-SQL
