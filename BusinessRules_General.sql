@@ -68,7 +68,7 @@ GO
 CREATE TABLE dbo.Bus_Rule_query
 (
  id INT IDENTITY(1,1) NOT NULL
-,query_type CHAR(1) NOT NULL -- P-procedure, F-function, V-view
+,query_type VARCHAR(20) NOT NULL -- P-procedure, F-function, V-view
 ,query_object_name VARCHAR(200) NULL -- enter the procedure/function/view name
 ,query_id INT NOT NULL  -- Object_id() ???
 ,query_text NVARCHAR(MAX)  -- query 
