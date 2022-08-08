@@ -1,5 +1,5 @@
-USE businessRules;
-GO
+-- USE businessRules;
+-- GO
 
 
 CREATE PROCEDURE dbo.sp_SampleQuery1
@@ -20,7 +20,9 @@ FROM
 	AND status = 0
 ) AS x
 join msdb..MSdatatype_mappings as m
-ON m.dbms_name =  x.dbms_name
+ON m.dbms_name =  x.dbms_name 
+;
+GO
 
 
 
@@ -45,7 +47,8 @@ AND t.TABLE_SCHEMA = c.TABLE_SCHEMA
 AND t.TABLE_CATALOG = c.TABLE_CATALOG
 WHERE
 	c.DATA_TYPE IN ('int','smallint','bigint','tinyint')
-AND c.ORDINAL_POSITION <= 10
+AND c.ORDINAL_POSITION <= 10 ;
+GO
 
 /***********************************************
 *
@@ -58,7 +61,8 @@ AND c.ORDINAL_POSITION <= 10
 
 
 IF object_id ('Bus_Rule_query', 'U') IS NOT  NULL
-DROP TABLE dbo.Bus_Rule_query
+DROP TABLE dbo.Bus_Rule_query;
+GO
 
 
 CREATE TABLE dbo.Bus_Rule_query
@@ -73,12 +77,13 @@ CREATE TABLE dbo.Bus_Rule_query
 ,user_created VARCHAR(50) NOT NULL DEFAULT (suser_name())
 ,date_created DATETIME NOT NULL DEFAULT (GETDATE())
 ,Rule_version INT DEFAULT(1)
-)
-
+);
+GO
 
 
 IF object_id ('Bus_Rules_parameters', 'U') IS NOT  NULL
-DROP TABLE dbo.Bus_Rules_parameters
+DROP TABLE dbo.Bus_Rules_parameters;
+GO
 
 
 CREATE TABLE dbo.Bus_Rules_parameters
@@ -93,7 +98,8 @@ CREATE TABLE dbo.Bus_Rules_parameters
 ,user_created VARCHAR(50) NOT NULL DEFAULT (suser_name())
 ,date_created DATETIME NOT NULL DEFAULT (GETDATE())
 ,Rule_version INT DEFAULT(1)
-)
+);
+GO
 -- primarni kljuc: query_id, query_key,rule_version
 
 
@@ -284,10 +290,10 @@ GO
 --- Execute
 
 EXEC dbo.sp_Create_ScriptObjects 
-		@query_id = 10203
+		@query_id = 10203;
 
 EXEC dbo.sp_Create_ScriptObjects 
 		@query_id = 10200
-        ,@ScriptObject = 0
+        ,@ScriptObject = 0;
 
 
