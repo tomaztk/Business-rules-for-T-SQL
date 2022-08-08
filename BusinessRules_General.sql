@@ -105,7 +105,7 @@ Populate table
 
 
  INSERT INTO dbo.Bus_Rule_query ([query_type], [query_object_name], [query_id], [query_text], [query_text_withParameters])
- SELECT 'P','dbo.sp_SampleQuery1', 10203
+ SELECT 'Procedure','dbo.sp_SampleQuery1', 10203
  ,NULL
 ,
 'CREATE PROCEDURE dbo.sp_SampleQuery1
@@ -130,7 +130,7 @@ join msdb..MSdatatype_mappings as m
 ON m.dbms_name =  x.dbms_name
 '
 UNION ALL 
- SELECT 'V','dbo.vw_SampleQuery2', 10200
+ SELECT 'View','dbo.vw_SampleQuery2', 10200
  ,NULL
 ,
 'CREATE VIEW dbo.vw_SampleQuery2
@@ -197,7 +197,6 @@ AND $wherekey2'
 
 
 
-
 /*
 Combine the key:value pairs and build objects (procedure, view, functions)
 Run procedure
@@ -220,7 +219,10 @@ Date: 06.08.2022
 Usage:
 	EXEC dbo.sp_Create_ScriptObjects 
 			@query_id = 10203
-			--@query_id = 10200
+	
+    EXEC dbo.sp_Create_ScriptObjects 
+		@query_id = 10200
+        ,@ScriptObject = 0
 
 Change Log:
 */
@@ -252,6 +254,7 @@ BEGIN
 		ORDER BY ID ASC
 
 	DECLARE @sqlUkaz NVARCHAR(MAX) = (SELECT [query_text_withParameters] FROM [dbo].[Bus_Rule_query] WHERE query_id = @Query_ID)
+    DECLARE @ObjectType NVARCHAR(30) = (SELECT [query_type] FROM [dbo].[Bus_Rule_query] WHERE query_id = @Query_ID)
 
 	WHILE (@i <= @nof_params)
 		BEGIN
@@ -264,7 +267,13 @@ BEGIN
 			
 		END
 
-	SELECT @sqlUkaz
+	IF (@ScriptObject = 1) 	SELECT @sqlUkaz
+    IF (@ScriptObject = 0)
+    BEGIN
+        DECLARE @DropSQL NVARCHAR(100) = 'DROP ' + @ObjectType + ' IF EXISTS ' + @ime
+        exec sp_executesql @DropSQL
+        exec sp_executesql @sqlUkaz
+    END
 	
 END;
 GO
@@ -279,5 +288,6 @@ EXEC dbo.sp_Create_ScriptObjects
 
 EXEC dbo.sp_Create_ScriptObjects 
 		@query_id = 10200
+        ,@ScriptObject = 0
 
 
