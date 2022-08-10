@@ -58,17 +58,14 @@ GO
 *
 ************************************************/
 
+IF object_id ('BusinessRules_Query', 'U') IS NOT  NULL
+DROP TABLE dbo.BusinessRules_Query
 
 
-IF object_id ('Bus_Rule_query', 'U') IS NOT  NULL
-DROP TABLE dbo.Bus_Rule_query;
-GO
-
-
-CREATE TABLE dbo.Bus_Rule_query
+CREATE TABLE dbo.BusinessRules_Query
 (
  id INT IDENTITY(1,1) NOT NULL
-,query_type VARCHAR(20) NOT NULL -- P-procedure, F-function, V-view
+,query_type VARCHAR(15) NOT NULL -- P-procedure, F-function, V-view
 ,query_object_name VARCHAR(200) NULL -- enter the procedure/function/view name
 ,query_id INT NOT NULL  -- Object_id() ???
 ,query_text NVARCHAR(MAX)  -- query 
@@ -77,30 +74,33 @@ CREATE TABLE dbo.Bus_Rule_query
 ,user_created VARCHAR(50) NOT NULL DEFAULT (suser_name())
 ,date_created DATETIME NOT NULL DEFAULT (GETDATE())
 ,Rule_version INT DEFAULT(1)
-);
-GO
+,CONSTRAINT PK_BussinesRulesQuery_QueryID_Version
+               PRIMARY KEY CLUSTERED (query_id, Rule_version)
+               WITH (IGNORE_DUP_KEY = OFF)
+)
 
 
-IF object_id ('Bus_Rules_parameters', 'U') IS NOT  NULL
-DROP TABLE dbo.Bus_Rules_parameters;
-GO
+
+IF object_id ('BusinessRules_Parameters', 'U') IS NOT  NULL
+DROP TABLE dbo.BusinessRules_Parameters
 
 
-CREATE TABLE dbo.Bus_Rules_parameters
+CREATE TABLE dbo.BusinessRules_Parameters
 (
  id INT IDENTITY(1,1) NOT NULL
-,query_id INT NOT NULL  -- FK on table dbo.Bus_Rule_query
-,query_parameter_Description VARCHAR(500) -- opis
+,query_id INT NOT NULL  
+,query_parameter_Description VARCHAR(500) 
 ,query_parameter_tableRelated VARCHAR(500) --  more tables separated with semi-colon ";"
-,query_key VARCHAR(20) -- $selectkey1
+,query_key VARCHAR(20) -- eg.: $selectkey1 $wherekey1
 ,query_value NVARCHAR(MAX) -- query part
 -- housekeeping
 ,user_created VARCHAR(50) NOT NULL DEFAULT (suser_name())
 ,date_created DATETIME NOT NULL DEFAULT (GETDATE())
-,Rule_version INT DEFAULT(1)
-);
-GO
--- primarni kljuc: query_id, query_key,rule_version
+,parameter_version INT DEFAULT(1)
+,CONSTRAINT PK_BussinesRulesParameters_QueryID_queryKey_Version
+               PRIMARY KEY CLUSTERED (query_id, query_key, parameter_version)
+               WITH (IGNORE_DUP_KEY = OFF)
+)
 
 
 
@@ -110,7 +110,7 @@ Populate table
 
 
 
- INSERT INTO dbo.Bus_Rule_query ([query_type], [query_object_name], [query_id], [query_text], [query_text_withParameters])
+ INSERT INTO dbo.BusinessRules_Query ([query_type], [query_object_name], [query_id], [query_text], [query_text_withParameters])
  SELECT 'Procedure','dbo.sp_SampleQuery1', 10203
  ,NULL
 ,
@@ -165,7 +165,7 @@ AND $wherekey2'
 
 
  
-  INSERT INTO dbo.Bus_Rules_parameters ([query_id], [query_parameter_Description], [query_parameter_tableRelated], [query_key], [query_value])
+  INSERT INTO dbo.BusinessRules_Parameters ([query_id], [query_parameter_Description], [query_parameter_tableRelated], [query_key], [query_value])
  SELECT 10203
  ,'CASE Statement to determine if ORACLE or SYBASE type'
  ,'master..spt_values'
