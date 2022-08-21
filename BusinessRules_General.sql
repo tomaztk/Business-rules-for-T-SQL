@@ -319,7 +319,7 @@ EXEC dbo.sp_Create_ScriptObjects
 
 
 
-ALTER PROCEDURE dbo.sp_Update_Parameters
+CREATE OR ALTER PROCEDURE dbo.sp_Update_Parameters
 	(
 	 @Query_ID INT
 	,@Query_key VARCHAR(20)
@@ -421,3 +421,67 @@ EXEC dbo.sp_Create_Objects
 	
 END;
 GO
+
+-- Scheduling and running
+
+
+CREATE TABLE dbo.BusinessRules_Executions
+(
+ id INT IDENTITY(1,1) NOT NULL
+,query_id INT NOT NULL  
+,query_execution TINYINT NOT NULL DEFAULT(0) -- 0 - rule is on; 1 - rule is off
+,user_created VARCHAR(50) NOT NULL DEFAULT (suser_name())
+,date_created DATETIME NOT NULL DEFAULT (GETDATE())
+,CONSTRAINT PK_BussinesRulesExecution_QueryID PRIMARY KEY CLUSTERED (query_id)
+);
+
+
+INSERT INTO dbo.BusinessRules_Executions (query_id, Query_execution)
+SELECT 
+ 10200, 0
+
+
+ ---- Query for the job
+
+SELECT query_id FROM dbo.BusinessRules_Executions WHERE query_execution = 0
+
+EXEC dbo.sp_Create_ScriptObjects 
+		@query_id = 10200
+
+
+
+
+ --- Creating SQL Server Job:
+USE msdb ;  
+GO  
+EXEC dbo.sp_add_job  
+    @job_name = N'Weekly Object Creations' ;  
+GO  
+EXEC sp_add_jobstep  
+    @job_name = N'Weekly Object Creations',  
+    @step_name = N'Create objects from BusinessRules queries',  
+    @subsystem = N'TSQL',  
+    @command = N'
+	
+SELECT query_id FROM dbo.BusinessRules_Executions WHERE query_execution = 0
+
+EXEC dbo.sp_Create_ScriptObjects 
+		@query_id = 10200
+	
+	',   
+    @retry_attempts = 5,  
+    @retry_interval = 5 ;  
+GO  
+EXEC dbo.sp_add_schedule  
+    @schedule_name = N'RunOnce',  
+    @freq_type = 1,  
+    @active_start_time = 233000 ;  
+USE msdb ;  
+GO  
+EXEC sp_attach_schedule  
+   @job_name = N'Weekly Object Creations',  
+   @schedule_name = N'RunOnce';  
+GO  
+EXEC dbo.sp_add_jobserver  
+    @job_name = N'Weekly Object Creations';  
+GO  
