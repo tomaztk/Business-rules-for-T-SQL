@@ -255,9 +255,9 @@ BEGIN
 	--DECLARE @query_ID INT = 10200
 
 	DECLARE @i INT = 1
-	DECLARE @tip CHAR(1)		= (SELECT query_type FROM dbo.Bus_Rule_query WHERE query_id = @query_ID)
-	DECLARE @ime VARCHAR(200)	= (SELECT query_object_name FROM dbo.Bus_Rule_query WHERE query_id = @query_ID)
-	DECLARE @nof_params INT = (SELECT count(*) FROM dbo.Bus_Rules_parameters as P JOIN  dbo.Bus_Rule_query as R ON P.Query_ID = R.query_id WHERE R.query_id = @query_ID)
+	DECLARE @tip CHAR(1)		= (SELECT query_type FROM dbo.BusinessRules_Query WHERE query_id = @query_ID)
+	DECLARE @ime VARCHAR(200)	= (SELECT query_object_name FROM dbo.BusinessRules_Query WHERE query_id = @query_ID)
+	DECLARE @nof_params INT = (SELECT count(*) FROM dbo.BusinessRules_Parameters as P JOIN  dbo.BusinessRules_Query as R ON P.Query_ID = R.query_id WHERE R.query_id = @query_ID)
 
 
 	IF OBJECT_ID('tempdb..#temp123','U') IS NOT NULL
@@ -271,12 +271,12 @@ BEGIN
 
 		INTO #temp123
 	
-		FROM dbo.Bus_Rules_parameters
+		FROM dbo.BusinessRules_Parameters
 		WHERE [query_id] = @query_id
 		ORDER BY ID ASC
 
-	DECLARE @sqlUkaz NVARCHAR(MAX) = (SELECT [query_text_withParameters] FROM [dbo].[Bus_Rule_query] WHERE query_id = @Query_ID)
-    DECLARE @ObjectType NVARCHAR(30) = (SELECT [query_type] FROM [dbo].[Bus_Rule_query] WHERE query_id = @Query_ID)
+	DECLARE @sqlUkaz NVARCHAR(MAX) = (SELECT [query_text_withParameters] FROM [dbo].[BusinessRules_Query] WHERE query_id = @Query_ID)
+    DECLARE @ObjectType NVARCHAR(30) = (SELECT [query_type] FROM [dbo].[BusinessRules_Query] WHERE query_id = @Query_ID)
 
 	WHILE (@i <= @nof_params)
 		BEGIN
@@ -441,15 +441,6 @@ SELECT
  10200, 0
 
 
- ---- Query for the job
-
-SELECT query_id FROM dbo.BusinessRules_Executions WHERE query_execution = 0
-
-EXEC dbo.sp_Create_ScriptObjects 
-		@query_id = 10200
-
-
-
 
  --- Creating SQL Server Job:
 USE msdb ;  
@@ -463,19 +454,30 @@ EXEC sp_add_jobstep
     @subsystem = N'TSQL',  
     @command = N'
 	
-SELECT query_id FROM dbo.BusinessRules_Executions WHERE query_execution = 0
+DECLARE @var1 INT
+DECLARE @cur CURSOR
+SET @cur = CURSOR STATIC FOR
+    SELECT query_id FROM dbo.BusinessRules_Executions WHERE query_execution = 0
 
-EXEC dbo.sp_Create_ScriptObjects 
-		@query_id = 10200
-	
-	',   
+
+OPEN @cur
+WHILE 1 = 1
+BEGIN
+     FETCH @cur INTO @var1
+     IF @@fetch_status <> 0
+        BREAK
+    EXEC dbo.sp_Create_ScriptObjects 
+		@query_id = @var1
+		,@ScriptObject = 0
+END
+',   
     @retry_attempts = 5,  
     @retry_interval = 5 ;  
 GO  
 EXEC dbo.sp_add_schedule  
     @schedule_name = N'RunOnce',  
     @freq_type = 1,  
-    @active_start_time = 233000 ;  
+    @active_start_time = 003000 ;  
 USE msdb ;  
 GO  
 EXEC sp_attach_schedule  
