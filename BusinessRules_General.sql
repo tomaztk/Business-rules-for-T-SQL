@@ -97,6 +97,7 @@ CREATE TABLE dbo.BusinessRules_Parameters
 ,user_created VARCHAR(50) NOT NULL DEFAULT (suser_name())
 ,date_created DATETIME NOT NULL DEFAULT (GETDATE())
 ,parameter_version INT DEFAULT(1)
+,parameter_active TINYINT DEFAULT(1) -- 1-is active; 0 - is not active
 ,CONSTRAINT PK_BussinesRulesParameters_QueryID_queryKey_Version
                PRIMARY KEY CLUSTERED (query_id, query_key, parameter_version)
                WITH (IGNORE_DUP_KEY = OFF)
@@ -335,8 +336,8 @@ Usage:
 			@query_id = 10203
 			,@Query_key = '$wherekey2'
 			,@new_query_value = ' '
-			,@new_query_parameter_Description = '
-			,@new_query_table_related = '
+			,@new_query_parameter_Description = ''
+			,@new_query_table_related = ''
 			,@is_enabled = 1
 
 
@@ -375,9 +376,10 @@ DECLARE @pam_ver INT = (SELECT max(parameter_version) from BusinessRules_Paramet
 declare @pam_row_id INT = (select max(id) from  BusinessRules_Parameters where [query_id] = @query_id AND query_key =  @Query_key)
 
 
--- only to disable parameter!
+-------------------------------------
+-- Only when disabling the parameter!
+-------------------------------------
 
--- Update procedure and replace the parameter with "1=1" or smth.
 
 IF (@is_enabled = 0)
 BEGIN
@@ -387,12 +389,26 @@ BEGIN
 		query_id = @query_id
 	and query_key = @Query_key
 	and id = @pam_row_id
+
+-- Update procedure and replace the parameter with "1=1"
+UPDATE dbo.BusinessRules_Query
+SET [query_text_withParameters] = REPLACE([query_text_withParameters], @Query_key, ' 1=1 ' )
+
+WHERE 
+		query_id = @query_id
+	and query_key = @Query_key
+
 END
+
 
 
 -->>>>>>>>>>>>>>> BEGIN TRAN
 
--- INSERT NEW VaLUE
+-------------------------------------
+-- When parameter exists & is updated
+-------------------------------------
+
+-- INSERT NEW VALUE FOR PARAMETER
 IF (@is_enabled = 1)
 BEGIN
 	 INSERT INTO dbo.BusinessRules_Parameters ([query_id], [query_parameter_Description], [query_parameter_tableRelated], [query_key], [query_value], parameter_version, parameter_active)
@@ -402,19 +418,17 @@ BEGIN
 		,@new_query_table_related
 		,@Query_key 
 		,@new_query_value 
-		,@pam_ver + 1
-		,@is_enabled 
+		,@pam_ver + 1 AS parameter_version
+		,@is_enabled AS Parameter_active
 
-	-- UPDATE OLD VALUEs
+	-- UPDATE VERSION FOR FOR OLD VALUE for SAME parameter
 
 END
 
 --Run CREATE procedure
-
-
-EXEC dbo.sp_Create_Objects 
+EXEC dbo.sp_Create_ScriptObjects
 			@query_id = @query_id
-			,@persistObject = 2
+			
 
 
 ---- >>>>>>>>>>>>>>> COMMIT TRAN	
