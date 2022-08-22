@@ -317,9 +317,6 @@ EXEC dbo.sp_Create_ScriptObjects
 
 
 
-
-
-
 CREATE OR ALTER PROCEDURE dbo.sp_Update_Parameters
 	(
 	 @Query_ID INT
@@ -338,7 +335,7 @@ Usage:
 			,@new_query_value = ' '
 			,@new_query_parameter_Description = ''
 			,@new_query_table_related = ''
-			,@is_enabled = 1
+			,@is_enabled = 0
 
 
 Change Log:
@@ -347,62 +344,30 @@ Change Log:
 AS
 BEGIN
 	
-	--DECLARE @query_ID INT = 10203
-	--DECLARE @Query_key VARCHAR(20) = '$wherekey2'
-
-
-	IF OBJECT_ID('tempdb..#temp123','U') IS NOT NULL
-	DROP TABLE #temp123
-
-	SELECT  
-		 id
-		,parameter_version
-		,parameter_Active
-		,query_id
-		,[query_key]
-		,[query_value]
-
-		INTO #temp123
-	
-	FROM dbo.BusinessRules_Parameters
-	WHERE 
-		[query_id] = @query_id
-	AND query_key =  @Query_key
-	ORDER BY ID ASC
-
-
-SELECT * FROM #temp123
-DECLARE @pam_ver INT = (SELECT max(parameter_version) from BusinessRules_Parameters where [query_id] = @query_id AND query_key =  @Query_key)
-declare @pam_row_id INT = (select max(id) from  BusinessRules_Parameters where [query_id] = @query_id AND query_key =  @Query_key)
-
-
 -------------------------------------
 -- Only when disabling the parameter!
 -------------------------------------
 
-
 IF (@is_enabled = 0)
 BEGIN
+
+	DECLARE @pam_ver0 INT = (SELECT max(parameter_version) from BusinessRules_Parameters where [query_id] = @query_id AND query_key =  @Query_key)
+
 	UPDATE dbo.BusinessRules_Parameters 
 	SET parameter_active = 0
 	WHERE
 		query_id = @query_id
 	and query_key = @Query_key
-	and id = @pam_row_id
+	and parameter_version = @pam_ver0
 
 -- Update procedure and replace the parameter with "1=1"
-UPDATE dbo.BusinessRules_Query
-SET [query_text_withParameters] = REPLACE([query_text_withParameters], @Query_key, ' 1=1 ' )
+	UPDATE dbo.BusinessRules_Query
+	SET query_text_withParameters = REPLACE(query_text_withParameters, @Query_key, ' 1=1 ' )
 
-WHERE 
-		query_id = @query_id
-	and query_key = @Query_key
+	WHERE 
+			query_id = @query_id
 
 END
-
-
-
--->>>>>>>>>>>>>>> BEGIN TRAN
 
 -------------------------------------
 -- When parameter exists & is updated
@@ -411,33 +376,43 @@ END
 -- INSERT NEW VALUE FOR PARAMETER
 IF (@is_enabled = 1)
 BEGIN
+	
+		DECLARE @pam_ver1 INT = (SELECT max(parameter_version) from BusinessRules_Parameters where [query_id] = @query_id AND query_key =  @Query_key)
+
+
+		UPDATE dbo.BusinessRules_Parameters 
+		SET @is_enabled = 0
+		WHERE
+			query_id = @query_id
+		AND query_key = @Query_key
+		AND parameter_version = @pam_ver1
+
+
+
 	 INSERT INTO dbo.BusinessRules_Parameters ([query_id], [query_parameter_Description], [query_parameter_tableRelated], [query_key], [query_value], parameter_version, parameter_active)
 	 SELECT 
-		 @query_id 
-		,@new_query_parameter_Description
-		,@new_query_table_related
-		,@Query_key 
-		,@new_query_value 
-		,@pam_ver + 1 AS parameter_version
+		 @query_id AS query_id
+		,@new_query_parameter_Description AS query_parameter_Description
+		,@new_query_table_related AS query_parameter_tableRelated
+		,@Query_key  AS query_key
+		,@new_query_value AS query_value
+		,@pam_ver1 + 1 AS parameter_version
 		,@is_enabled AS Parameter_active
-
-	-- UPDATE VERSION FOR FOR OLD VALUE for SAME parameter
 
 END
 
 --Run CREATE procedure
 EXEC dbo.sp_Create_ScriptObjects
 			@query_id = @query_id
-			
 
-
----- >>>>>>>>>>>>>>> COMMIT TRAN	
-	
 END;
 GO
 
--- Scheduling and running
 
+
+-------------------------
+-- Scheduling and running
+--------------------------
 
 CREATE TABLE dbo.BusinessRules_Executions
 (
