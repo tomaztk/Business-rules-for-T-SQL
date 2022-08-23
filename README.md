@@ -116,7 +116,7 @@ The framework should be fun and light, not stern and stressful. Using the framew
 
 We believe that parametrisation is the best philosophy.
 
-Clone or fork repository 
+Contributing
 =====
 
 If you are interested in collaborating project, feel free to clone or fork the repository. Read about the collaboration [github/collaborate](https://https://github.com/tomaztk/Business-rules-for-T-SQL/blob/main/collaborate.md).
@@ -124,6 +124,9 @@ If you are interested in collaborating project, feel free to clone or fork the r
 ```
 git clone https://github.com/tomaztk/Business-rules-for-T-SQL.git
 ```
+
+# Release History
+* 0.1.0 - Initial script (August 22nd, 2022)
 
 
 License
