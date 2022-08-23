@@ -5,7 +5,7 @@
  <a href="https://github.com/tomaztk/Business-rules-for-T-SQL/blob/main/LICENSE"><img src=https://img.shields.io/github/license/sourcerer-io/sourcerer-app.svg?colorB=ff0000></a>
 </h1>
 
-A lightweight framework for managing your business rules and logic in Transact SQL for Microsoft SQL Server and Azure SQL Database / Azure MI SQL.
+A lightweight framework for managing your business rules and logic in Transact SQL for on-prem Microsoft SQL Server and Azure SQL Database, Azure SQL Server, or Azure SQL MI.
 
 
 Have you ever found yourself with T-SQL queries and hard-coded values? In SELECT or in WHERE clauses. The framework will help you with values parametrisation and an easier way to manage the rules.
