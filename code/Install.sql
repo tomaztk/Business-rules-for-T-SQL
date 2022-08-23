@@ -3,6 +3,7 @@
 Description: Lightweight T-SQL Framework for managing your Business logic
 Author: Tomaz Kastrun
 Date: 20.Aug.2022
+URL: https://github.com/tomaztk/Business-rules-for-T-SQL
 
 List of created objects:
 - dbo.BusinessRules_Query
