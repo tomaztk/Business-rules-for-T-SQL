@@ -90,6 +90,7 @@ GO
 
 IF object_id ('dbo.sp_Create_ScriptObjects', 'P') IS NOT  NULL
 DROP PROCEDURE dbo.sp_Create_ScriptObjects;
+GO
 
 
 CREATE OR ALTER PROCEDURE dbo.sp_Create_ScriptObjects
@@ -166,6 +167,7 @@ GO
 
 IF object_id ('sp_Update_Parameters', 'P') IS NOT  NULL
 DROP PROCEDURE dbo.sp_Update_Parameters;
+GO
 
 
 CREATE OR ALTER PROCEDURE dbo.sp_Update_Parameters
@@ -252,6 +254,7 @@ END
 --Run CREATE procedure
 EXEC dbo.sp_Create_ScriptObjects
 			@query_id = @query_id
+			 ,@ScriptObject = 0
 
 END;
 GO

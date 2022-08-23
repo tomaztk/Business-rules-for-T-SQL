@@ -32,6 +32,76 @@ Showcase
 
 There is a showcase sample file prepared to get started with the framework. Go to [github/code](https://github.com/tomaztk/Business-rules-for-T-SQL/tree/main/code), and run the *Showcase.sql* in your SQL Server database. 
 
+```
+DROP PROCEDURE IF EXISTS dbo.sp_SampleQuery1;
+GO
+
+
+-- INSERT PROCEDURE in TABLE with defined two parameters!
+-- $SelectKey1
+-- $WhereKey1
+
+INSERT INTO dbo.BusinessRules_Query ([query_type], [query_object_name], [query_id], [query_text], [query_text_withParameters])
+ SELECT 'Procedure','dbo.sp_SampleQuery1', 10203
+ ,NULL
+,
+'CREATE PROCEDURE dbo.sp_SampleQuery1
+AS
+
+SELECT * FROM
+(
+	SELECT 
+		name
+		,number
+		,$selectkey1
+	FROM 
+		master..spt_values
+	WHERE
+	
+	$wherekey1
+	AND status = 0
+) AS x
+join msdb..MSdatatype_mappings as m
+ON m.dbms_name =  x.dbms_name
+'
+
+
+--- INSERT Parameters
+
+  INSERT INTO dbo.BusinessRules_Parameters ([query_id], [query_parameter_Description], [query_parameter_tableRelated], [query_key], [query_value])
+ SELECT 10203
+ ,'CASE Statement to determine if ORACLE or SYBASE type'
+ ,'master..spt_values'
+ ,'$selectkey1'
+ ,'CASE WHEN name like ''DB %'' THEN ''ORACLE'' ELSE ''SYBASE'' END As dbms_name'
+
+ UNION ALL
+  SELECT 10203
+ ,'Define the type of names query will be returning'
+ ,'master..spt_values'
+ ,'$wherekey1'
+ ,'[type] IN (''DBR'',''DC'',''O9T'')'
+
+
+--- Run Object Creation
+
+EXEC dbo.sp_Create_ScriptObjects 
+		@query_id = 10203
+        ,@scriptObject = 0;
+
+
+--- UPDATE Parameters; We push change to WHERE PARAMETER
+
+EXEC dbo.sp_Update_Parameters 
+        @query_id = 10203
+        ,@Query_key = '$wherekey1'
+        ,@new_query_value = ' [type] IN (''DBR'',''DC'') '
+        ,@new_query_parameter_Description = 'Define the type of names query will be returning'
+        ,@new_query_table_related = 'master..spt_values'
+        ,@is_enabled = 1
+```
+
+
 
 Parameters
 ============
