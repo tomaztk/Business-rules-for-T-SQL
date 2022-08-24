@@ -201,7 +201,7 @@ git clone https://github.com/tomaztk/Business-rules-for-T-SQL.git
 
 License
 =======
-Sourcerer is under the MIT license. See the [LICENSE](https://github.com/tomaztk/Business-rules-for-T-SQL/blob/main/LICENSE.md) for more information.
+Framework is under the MIT license. See the [LICENSE](https://github.com/tomaztk/Business-rules-for-T-SQL/blob/main/LICENSE.md) for more information.
 
 Links
 =====
