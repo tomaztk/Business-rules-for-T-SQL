@@ -1,8 +1,8 @@
 # Business rules for T-SQL
 
 <h1 style="font-weight:normal">
-  <a href="https://sourcerer.io/start"><img src=https://img.shields.io/badge/SQLBusiness-Rules-brightgreen.svg?colorA=087c08></a>
- <a href="https://github.com/tomaztk/Business-rules-for-T-SQL/blob/main/LICENSE"><img src=https://img.shields.io/github/license/sourcerer-io/sourcerer-app.svg?colorB=ff0000></a>
+  <a href="https://github.com/tomaztk/Business-rules-for-T-SQL"><img src=https://img.shields.io/badge/SQLBusiness-Rules-brightgreen.svg?colorA=087c08></a>
+ <a href="https://github.com/tomaztk/Business-rules-for-T-SQL/blob/main/LICENSE"><img src=https://img.shields.io/badge/Business--Rules-MIT-red></a>
 </h1>
 
 A lightweight framework for managing your business rules and logic in Transact SQL for on-prem Microsoft SQL Server and Azure SQL Database, Azure SQL Server, or Azure SQL MI.
